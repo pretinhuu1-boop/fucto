@@ -24,7 +24,7 @@
 
 3. **启动 API 服务**
    ```bash
-   python openai_api_server:app --host 0.0.0.0 --port 8000
+   uvicorn openai_api_server:app --host 0.0.0.0 --port 8000
    ```
    - FastAPI 服务会提供 `/v1/chat/completions` 与 `/v1/models` 两个主要端点。
    - 默认返回格式与 OpenAI Chat Completions 兼容，可直接被现有客户端使用。
