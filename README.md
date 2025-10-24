@@ -1,44 +1,42 @@
-# fucto项目说明
+# fucto Project Description
 
-本项目提供一个与 OpenAI 接口兼容的 FastAPI 服务，并包含一个用于直接测试 WebSocket 接口的示例脚本。
+This project provides a FastAPI service compatible with the OpenAI API and includes an example script for directly testing the WebSocket interface.
 
-## 项目结构
+## Project Structure
 
-- `openai_api_server.py`：FastAPI 实现的 `/v1/chat/completions` 兼容服务，支持轮询多个 Cookie 并与 CTO.NEW 的后端服务通信。
-- `websocket_example.py`：命令行交互示例，演示如何直接通过 HTTP + WebSocket 与引擎交互并获取实时响应。
-- `requirements.txt`：运行所需的第三方依赖列表。
-- `cookies.txt`（需手动创建）：按行存放可用的 Cookie 字符串，服务会自动轮询使用。
+- `openai_api_server.py`: FastAPI implementation of a `/v1/chat/completions` compatible service, supporting round-robin polling of multiple Cookies and communication with CTO.NEW's backend service.
+- `websocket_example.py`: Command-line interactive example demonstrating how to interact directly with the engine via HTTP + WebSocket and receive real-time responses.
+- `requirements.txt`: List of third-party dependencies required for execution.
+- `cookies.txt` (needs manual creation): Stores available Cookie strings, one per line. The service will automatically poll and use them.
 
-## 快速开始
+## Quick Start
 
-1. **环境准备**
-   - 推荐使用 Python 3.10+。
-   - （可选）创建并激活虚拟环境。
-   - 执行 `pip install -r requirements.txt` 安装依赖。
+1.  **Environment Setup**
+    -   Python 3.10+ is recommended.
+    -   (Optional) Create and activate a virtual environment.
+    -   Execute `pip install -r requirements.txt` to install dependencies.
 
-2. **配置 Cookie**
-   - 登录网站，进行抓包，找到https://clerk.cto.new/v1/client/sessions/sess...请求的请求头，复制其中的cookies，以【__client=】开头
-   - 在项目根目录创建 `cookies.txt`。
-   - 将多个 Cookie 字符串按行写入文件，可添加 `#` 开头的注释行。
-   - 每次请求将自动轮询使用不同的 Cookie，实现简单的负载均衡。
+2.  **Configure Cookies**
+    -   Log in to the website, capture network traffic, find the request headers for https://clerk.cto.new/v1/client/sessions/sess..., and copy the cookies, starting with【__client=】
+    -   Create `cookies.txt` in the project root directory.
+    -   Write multiple Cookie strings into the file, one per line. Lines starting with `#` can be added as comments.
+    -   Each request will automatically use a different Cookie in a round-robin fashion, achieving simple load balancing.
 
-3. **启动 API 服务**
-   ```bash
-   python openai_api_server:app --host 0.0.0.0 --port 8000
-   ```
-   - FastAPI 服务会提供 `/v1/chat/completions` 与 `/v1/models` 两个主要端点。
-   - 默认返回格式与 OpenAI Chat Completions 兼容，可直接被现有客户端使用。
+3.  **Start the API Service**
+    ```bash
+    python openai_api_server:app --host 0.0.0.0 --port 8000
+    ```
+    -   The FastAPI service will provide two main endpoints: `/v1/chat/completions` and `/v1/models`.
+    -   The default response format is compatible with OpenAI Chat Completions and can be used directly by existing clients.
 
-4. **运行 WebSocket 示例**
-   ```bash
-   python websocket_example.py
-   ```
-   - 首次运行会在当前目录保存 `chat_id.txt`，以便选择复用或新建对话。
-   - 根据提示输入消息，可实时获取模型回复。
+4.  **Run the WebSocket Example**
+    ```bash
+    python websocket_example.py
+    ```
+    -   On the first run, it will save `chat_id.txt` in the current directory, allowing you to choose whether to reuse or create a new conversation.
+    -   Input messages according to the prompt to receive real-time model replies.
 
+## FAQ
 
-## 常见问题
-
-- **Cookie 失效**：出现 401 或 403 时，更新 `cookies.txt` 中的条目后保存即可继续使用，无需重启服务。
-- **依赖缺失**：确保在正确的虚拟环境中执行安装命令；必要时重新安装 `websockets`、`fastapi` 等包。
-
+-   **Cookie Expiration**: If a 401 or 403 error occurs, update the entries in `cookies.txt` and save the file to continue use. No service restart is needed.
+-   **Missing Dependencies**: Ensure the installation command is executed in the correct virtual environment; reinstall packages like `websockets`, `fastapi` if necessary.
