@@ -1,44 +1,132 @@
-# fucto项目说明
+# fucto: CTO.NEW 到 OpenAI API 的逆向工程桥接
 
-本项目提供一个与 OpenAI 接口兼容的 FastAPI 服务，并包含一个用于直接测试 WebSocket 接口的示例脚本。
+**TL;DR**: 把 CTO.NEW 的私有 API 包装成标准的 OpenAI 兼容接口。
 
-## 项目结构
+## 架构
 
-- `openai_api_server.py`：FastAPI 实现的 `/v1/chat/completions` 兼容服务，支持轮询多个 Cookie 并与 CTO.NEW 的后端服务通信。
-- `websocket_example.py`：命令行交互示例，演示如何直接通过 HTTP + WebSocket 与引擎交互并获取实时响应。
-- `requirements.txt`：运行所需的第三方依赖列表。
-- `cookies.txt`（需手动创建）：按行存放可用的 Cookie 字符串，服务会自动轮询使用。
+- `cto_new_client.py` - 核心客户端，处理所有与 CTO.NEW 的交互
+- `openai_api_server.py` - FastAPI 服务器，提供 `/v1/chat/completions` 接口
+- `websocket_example.py` - 命令行测试工具
 
-## 快速开始
+## 认证流程概述
 
-1. **环境准备**
-   - 推荐使用 Python 3.10+。
-   - （可选）创建并激活虚拟环境。
-   - 执行 `pip install -r requirements.txt` 安装依赖。
+服务启动后，每次处理请求都会自动执行与前端一致的认证步骤：
 
-2. **配置 Cookie**
-   - 登录网站，进行抓包，找到https://clerk.cto.new/v1/client/sessions/sess...请求的请求头，复制其中的cookies，以【__client=】开头
-   - 在项目根目录创建 `cookies.txt`。
-   - 将多个 Cookie 字符串按行写入文件，可添加 `#` 开头的注释行。
-   - 每次请求将自动轮询使用不同的 Cookie，实现简单的负载均衡。
+1. 访问 Clerk 的 `/v1/client` 接口，获取 `last_active_session_id`、`last_active_token` 以及最近活跃的组织信息。
+2. 根据需要回补 `/v1/me/organization_memberships`，确保能够拿到可用的 WebSocket token 和组织 ID。
+3. 调用 `/v1/client/sessions/{session}/touch`，将当前组织 ID 写回，并换取最新的会话 JWT。
+4. 最后请求 `/v1/client/sessions/{session}/tokens` 生成正式的 Bearer token，用于后续调用 CTO.NEW 的私有接口。
 
-3. **启动 API 服务**
-   ```bash
-   python openai_api_server:app --host 0.0.0.0 --port 8000
-   ```
-   - FastAPI 服务会提供 `/v1/chat/completions` 与 `/v1/models` 两个主要端点。
-   - 默认返回格式与 OpenAI Chat Completions 兼容，可直接被现有客户端使用。
+整个流程通过 `curl-cffi` 指纹模拟加上统一的 `BrowserFingerprint`，确保所有 HTTP 与 WebSocket 请求使用同一套 headers 与 TLS 指纹，最大程度贴近真实浏览器。
 
-4. **运行 WebSocket 示例**
-   ```bash
-   python websocket_example.py
-   ```
-   - 首次运行会在当前目录保存 `chat_id.txt`，以便选择复用或新建对话。
-   - 根据提示输入消息，可实时获取模型回复。
+## 快速部署
+
+### 使用 uv (推荐)
+
+```bash
+git clone <repo> fucto && cd fucto
+uv venv && source .venv/bin/activate
+uv sync
+# 把你的 cookie 放到 cookies/cookies.txt 里
+uv run uvicorn openai_api_server:app --host 0.0.0.0 --port 8000
+```
+
+### 使用 Docker
+
+```bash
+docker build -t fucto .
+docker run -d --name fucto -p 8000:8000 \
+  -v $(pwd)/cookies:/app/cookies:ro \
+  fucto
+```
+
+- 仓库已自带 `Dockerfile`，可直接使用上述命令构建镜像。
+- 如果需要自定义镜像名称，将 `-t fucto` 调整为你自己的仓库名即可。
+
+### 使用 Docker Compose
+
+```yaml
+services:
+  fucto:
+    build: .
+    image: fucto:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./cookies:/app/cookies:ro
+    restart: unless-stopped
+```
+
+```bash
+docker compose up -d   # 构建并启动
+docker compose down    # 停止并清理
+```
+
+- 记得在 `docker compose up` 之前先准备好同目录下的 `cookies/cookies.txt`。
+
+## Cookie 获取
+
+1. 登录 cto.new
+2. 打开开发者工具，找到对 `clerk.cto.new` 的请求
+3. 复制完整的 `cookie` 头部值
+4. 粘贴到 `cookies/cookies.txt` 中（每行一个 cookie）
+
+## 测试
+
+```bash
+# 最小化 Chat Completions 调用（OpenAI 兼容格式）
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+        "model": "gpt-5",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {"type": "text", "text": "说一句测试用的中文问候语。"}
+            ]
+          }
+        ],
+        "stream": false
+      }'
+
+# 测试 WebSocket
+uv run python websocket_example.py
+```
 
 
-## 常见问题
+## 支持的模型
 
-- **Cookie 失效**：出现 401 或 403 时，更新 `cookies.txt` 中的条目后保存即可继续使用，无需重启服务。
-- **依赖缺失**：确保在正确的虚拟环境中执行安装命令；必要时重新安装 `websockets`、`fastapi` 等包。
+当前通过 `/v1/models` 会返回以下 OpenAI 兼容模型名称，并映射到 CTO.NEW 的适配器：
 
+| OpenAI 模型名            | CTO.NEW Adapter |
+|-------------------------|-----------------|
+| `gpt-5`                 | `GPT5`          |
+| `claude-sonnet-4-5`     | `ClaudeSonnet4_5` |
+
+如需扩展，修改 `openai_api_server.py` 中的 `MODEL_MAPPING`。
+
+### 性能优化
+
+- 使用 `curl-cffi` 的浏览器指纹模拟（impersonate）能力，绕过 TLS 指纹识别
+- 统一的浏览器指纹（User-Agent 与相关 headers）在整个会话中复用，同时涵盖 Clerk 认证、JWT 刷新与 WebSocket 握手
+- 自动执行 `/client` → `/touch` → `/tokens` 的会话刷新流程，确保 JWT 始终有效
+- 连接池复用，减少重复握手开销
+- 使用 `tiktoken` 进行准确的 token 计算（如果可用）
+
+## 故障排除
+
+### 401 认证失败
+
+Cookie 过期了。重新获取并更新 `cookies/cookies.txt`。
+
+### 500 服务器错误
+
+检查：
+1. Cookie 是否有效
+2. CTO.NEW 服务是否正常
+3. 网络连接是否正常
+
+### WebSocket 连接问题
+
+可能是网络防火墙或代理问题。尝试直接连接或使用 VPN。
