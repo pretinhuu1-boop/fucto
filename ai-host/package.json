@@ -1,0 +1,20 @@
+{
+  "name": "ai-host",
+  "version": "0.1.0",
+  "description": "AI Co-Host Operacional - Avatar 3D para OBS com teleprompter inteligente, SEO engine e pos-producao automatizada",
+  "private": true,
+  "workspaces": [
+    "src/backend",
+    "src/frontend",
+    "src/frontend-hud"
+  ],
+  "scripts": {
+    "backend": "npm run start --workspace=src/backend",
+    "avatar": "npm run dev --workspace=src/frontend",
+    "hud": "npm run dev --workspace=src/frontend-hud",
+    "dev": "concurrently \"npm run backend\" \"npm run avatar\" \"npm run hud\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
