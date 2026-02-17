@@ -77,69 +77,112 @@ Cada task e autocontida. O Claude (ou outro agente) deve:
 
 ---
 
-## FASE 3 — SEO + AEO + Copy Engine
-> Objetivo: Conteudo nasce otimizado
+## FASE 3 — Criacao Visual (Pipeline de Assets IA)
+> Objetivo: Gerar imagens, animar, criar musica/SFX/voz com IA
 
-### 3.1 SEO Engine
-- [ ] **T-301**: Criar modulo SEO (titulo, descricao, tags)
-- [ ] **T-302**: Integrar pesquisa de keywords (YouTube suggest API)
-- [ ] **T-303**: Gerar 5+ opcoes de titulo com CTR estimado
-- [ ] **T-304**: Gerar descricao estruturada com keywords
-- [ ] **T-305**: Gerar tags relevantes
-- [ ] **T-306**: Gerar capitulos com timestamps
+### 3.0 MCP Setup
+- [ ] **T-300**: Configurar .mcp.json com todos os MCPs do projeto
+- [ ] **T-301**: Configurar e testar Stitch MCP (Google Cloud + auth)
+- [ ] **T-302**: Configurar e testar remotion-media-mcp (Kie.ai key)
+- [ ] **T-303**: Configurar e testar ElevenLabs MCP
+- [ ] **T-304**: Configurar e testar OBS MCP (obs-mcp)
+- [ ] **T-305**: Configurar e testar @remotion/mcp (docs) + Agent Skills
 
-### 3.2 AEO Engine
-- [ ] **T-311**: Criar modulo AEO
-- [ ] **T-312**: Gerar FAQ estruturado do conteudo
-- [ ] **T-313**: Gerar resumo semantico (snippet-ready)
-- [ ] **T-314**: Estruturar para featured snippets
+### 3.1 Geracao de Imagens (Nano Banana Pro)
+- [ ] **T-311**: Criar modulo de geracao de imagem com prompts cinematograficos
+- [ ] **T-312**: Template de prompt: thumbnail YouTube (close-up, emocao, contraste)
+- [ ] **T-313**: Template de prompt: b-roll cinematico (lente, luz, composicao)
+- [ ] **T-314**: Template de prompt: graficos/infograficos (texto em imagem, layout)
+- [ ] **T-315**: Sistema de referencia visual (manter consistencia entre assets)
+- [ ] **T-316**: Gerar em multiplos aspect ratios (16:9, 9:16, 1:1) automaticamente
 
-### 3.3 Copy Engine
-- [ ] **T-321**: Criar modulo de copywriting
-- [ ] **T-322**: Gerar hooks (primeiros 30s)
-- [ ] **T-323**: Estrutura de retencao (reset points a cada 2-3min)
-- [ ] **T-324**: CTAs naturais
-- [ ] **T-325**: Texto de thumbnail
+### 3.2 Animacao de Imagens (Veo 3.1)
+- [ ] **T-321**: Criar modulo de animacao (image-to-video)
+- [ ] **T-322**: Templates de movimento: dolly in, pan, crane, steady
+- [ ] **T-323**: Transicoes cinematograficas entre imagens (match cut, morph)
+- [ ] **T-324**: Gerar clips de b-roll animado a partir de imagens estaticas
+
+### 3.3 Audio IA
+- [ ] **T-331**: Criar modulo de TTS com ElevenLabs (21 vozes, controle de estilo)
+- [ ] **T-332**: Criar modulo de musica com Suno (background, intro, outro)
+- [ ] **T-333**: Criar modulo de SFX com ElevenLabs (swoosh, impact, ambient)
+- [ ] **T-334**: Gerar legendas com Whisper local
+
+### 3.4 UI/UX com Stitch
+- [ ] **T-341**: Extrair Design DNA de referencia visual
+- [ ] **T-342**: Gerar tela do Avatar Overlay com Stitch
+- [ ] **T-343**: Gerar tela do HUD com Stitch
+- [ ] **T-344**: Gerar tela do Painel de Controle com Stitch
+- [ ] **T-345**: Converter HTML+Tailwind do Stitch pra componentes React
 
 ---
 
-## FASE 4 — Post Engine (Remotion)
-> Objetivo: Edicao automatizada
+## FASE 4 — Post Engine (Remotion + FFmpeg)
+> Objetivo: Edicao automatizada com assets gerados por IA
 
 ### 4.1 Remotion Setup
-- [ ] **T-401**: Criar projeto Remotion
-- [ ] **T-402**: Pesquisar e documentar API do Remotion
-- [ ] **T-403**: Criar composicao base (16:9 e 9:16)
+- [ ] **T-401**: Criar projeto Remotion com Agent Skills instalados
+- [ ] **T-402**: Criar composicao base 16:9 (video principal)
+- [ ] **T-403**: Criar composicao base 9:16 (Shorts/Reels)
+- [ ] **T-404**: Criar composicao 2.39:1 (cinematico)
 
-### 4.2 Edicao Automatizada
-- [ ] **T-411**: Detectar silencios no audio (ffmpeg)
-- [ ] **T-412**: Remover silencios automaticamente
-- [ ] **T-413**: Marcar highlights (momentos de energia alta)
-- [ ] **T-414**: Gerar cortes de shorts (< 60s, 9:16)
-- [ ] **T-415**: Capturar frame para thumbnail
-- [ ] **T-416**: Renderizar via Node (programmatic render)
+### 4.2 Pipeline de Assets → Video
+- [ ] **T-411**: Integrar assets do remotion-media-mcp (public/ → staticFile)
+- [ ] **T-412**: Montar timeline com imagens animadas + audio + legendas
+- [ ] **T-413**: Aplicar principios de ritmo de edicao (ver CINEMATOGRAPHY.md)
+- [ ] **T-414**: J-cuts e L-cuts automaticos nas transicoes de audio
 
-### 4.3 YouTube Integration
-- [ ] **T-421**: Integrar YouTube Data API v3 (OAuth 2.0)
-- [ ] **T-422**: Funcao: upload de video
-- [ ] **T-423**: Funcao: definir metadata (titulo, desc, tags, thumbnail)
-- [ ] **T-424**: Funcao: ler analytics de video
-- [ ] **T-425**: Funcao: ler analytics do canal
+### 4.3 Edicao Automatizada (FFmpeg MCP)
+- [ ] **T-421**: Detectar e remover silencios (FFmpeg MCP)
+- [ ] **T-422**: Marcar highlights (momentos de energia alta no audio)
+- [ ] **T-423**: Gerar cortes de Shorts (< 60s, 9:16, vertical)
+- [ ] **T-424**: Capturar melhor frame pra thumbnail
+- [ ] **T-425**: Renderizar via Remotion CLI (programmatic render)
 
 ---
 
-## FASE 5 — Memoria e Evolucao
+## FASE 5 — SEO + AEO + Copy + YouTube
+> Objetivo: Conteudo nasce otimizado e publicado
+
+### 5.1 SEO Engine
+- [ ] **T-501**: Criar modulo SEO (titulo, descricao, tags)
+- [ ] **T-502**: Integrar pesquisa de keywords (YouTube suggest API)
+- [ ] **T-503**: Gerar 5+ opcoes de titulo com CTR estimado
+- [ ] **T-504**: Gerar descricao estruturada com keywords
+- [ ] **T-505**: Gerar tags relevantes
+- [ ] **T-506**: Gerar capitulos com timestamps
+
+### 5.2 AEO Engine
+- [ ] **T-511**: Criar modulo AEO
+- [ ] **T-512**: Gerar FAQ estruturado do conteudo
+- [ ] **T-513**: Gerar resumo semantico (snippet-ready)
+
+### 5.3 Copy Engine
+- [ ] **T-521**: Criar modulo de copywriting
+- [ ] **T-522**: Gerar hooks (primeiros 30s)
+- [ ] **T-523**: Estrutura de retencao (reset points)
+- [ ] **T-524**: CTAs naturais + texto de thumbnail
+
+### 5.4 YouTube Integration
+- [ ] **T-531**: Integrar YouTube Data API v3 (OAuth 2.0)
+- [ ] **T-532**: Upload de video com metadata otimizada
+- [ ] **T-533**: Upload de thumbnail gerada por IA
+- [ ] **T-534**: Ler analytics (retencao, CTR, views)
+
+---
+
+## FASE 6 — Memoria e Evolucao
 > Objetivo: Sistema aprende com voce
 
-### 5.1 Memory Core
-- [ ] **T-501**: Criar sistema de memoria JSON local
-- [ ] **T-502**: Salvar historico de broadcasts
-- [ ] **T-503**: Salvar roteiros usados
-- [ ] **T-504**: Salvar metricas por video (retencao, CTR, views)
-- [ ] **T-505**: Detectar padroes de estilo (palavras frequentes, ritmo)
+### 6.1 Memory Core
+- [ ] **T-601**: Criar sistema de memoria JSON local
+- [ ] **T-602**: Salvar historico de broadcasts
+- [ ] **T-603**: Salvar roteiros e prompts usados (cinematografia)
+- [ ] **T-604**: Salvar metricas por video (retencao, CTR, views)
+- [ ] **T-605**: Detectar padroes de estilo visual + verbal
 
-### 5.2 Learning Loop
-- [ ] **T-511**: Analisar quais videos performaram melhor
-- [ ] **T-512**: Ajustar sugestoes de SEO baseado em historico
-- [ ] **T-513**: Ajustar copy baseado em retencao real
-- [ ] **T-514**: Gerar relatorio semanal de performance
+### 6.2 Learning Loop
+- [ ] **T-611**: Analisar quais videos/thumbnails performaram melhor
+- [ ] **T-612**: Ajustar prompts de imagem baseado em CTR de thumbnails
+- [ ] **T-613**: Ajustar copy baseado em retencao real
+- [ ] **T-614**: Gerar relatorio semanal de performance

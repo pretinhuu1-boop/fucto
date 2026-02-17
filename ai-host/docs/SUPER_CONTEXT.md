@@ -20,14 +20,22 @@ guia seu roteiro, e depois cuida da pos-producao e publicacao no YouTube.
 - Controle do OBS via WebSocket API
 - Ve sua tela, ouve voce, fala com voce (TTS)
 
-### 2. POS-PRODUCAO (depois da gravacao)
-- Remotion para edicao automatizada
-- Cortes automaticos, remocao de silencios
-- Geracao de Shorts (9:16)
-- Thumbnail automatica
-- Export multi-formato (9:16, 16:9)
+### 2. CRIACAO VISUAL (geracao de assets)
+- Imagens via Nano Banana Pro (Gemini 3 Pro Image) — ate 4K
+- Animacao de imagens via Google Veo 3.1 (image-to-video)
+- Musica via Suno, SFX via ElevenLabs
+- TTS via ElevenLabs (21 vozes) ou Google Cloud TTS
+- Legendas via Whisper (local)
+- Tudo gerenciado pelo remotion-media-mcp via Kie.ai
 
-### 3. PUBLICACAO + OTIMIZACAO
+### 3. POS-PRODUCAO (depois da gravacao)
+- Remotion para edicao automatizada com assets gerados por IA
+- Cortes automaticos, remocao de silencios (FFmpeg MCP)
+- Geracao de Shorts (9:16)
+- Thumbnail automatica (Nano Banana Pro + cinematografia)
+- Export multi-formato (9:16, 16:9, 2.39:1)
+
+### 4. PUBLICACAO + OTIMIZACAO
 - SEO YouTube (titulos, descricoes, keywords, capitulos)
 - AEO (otimizacao para respostas de IA)
 - Copy magnetica (hooks, retencao, gatilhos psicologicos)
@@ -42,14 +50,21 @@ guia seu roteiro, e depois cuida da pos-producao e publicacao no YouTube.
 |-------------|--------------------------------------|
 | Backend     | Node.js + Express                    |
 | Frontend    | React + React Three Fiber            |
+| UI Design   | Google Stitch (MCP) → HTML+Tailwind → React |
 | Avatar      | Ready Player Me + Viseme lip sync    |
 | STT         | Google Cloud Speech-to-Text API      |
-| TTS         | Google Cloud Text-to-Speech API      |
-| OBS         | OBS WebSocket v5 API                 |
-| Video       | Remotion                             |
+| TTS         | ElevenLabs (21 vozes) + Google Cloud TTS |
+| Imagens IA  | Nano Banana Pro (Gemini 3 Pro Image) via Kie.ai |
+| Video IA    | Google Veo 3.1 via Kie.ai            |
+| Musica IA   | Suno V5 via Kie.ai                   |
+| SFX IA      | ElevenLabs SFX V2 via Kie.ai         |
+| Legendas    | Whisper (local)                       |
+| OBS         | OBS WebSocket v5 (obs-mcp)           |
+| Video Edit  | Remotion + FFmpeg MCP                |
 | YouTube     | YouTube Data API v3                  |
 | Memoria     | JSON local (evolui depois)           |
-| Comunicacao | WebSocket (backend <-> frontend)     |
+| MCPs        | Stitch, OBS, Remotion (docs+media), ElevenLabs, FFmpeg, Sharp |
+| Gateway IA  | Kie.ai (API unica pra tudo)          |
 
 ---
 
@@ -77,15 +92,16 @@ guia seu roteiro, e depois cuida da pos-producao e publicacao no YouTube.
 
 ---
 
-## 5 Fases
+## 6 Fases
 
 | Fase | O que entrega | Resultado |
 |------|--------------|-----------|
-| 1    | Node backend + OBS WebSocket + React overlay 9:16 + Avatar | Avatar aparece no OBS e se comunica |
+| 1    | Node backend + OBS MCP + Stitch UI + React overlay + Avatar | Avatar aparece no OBS com UI profissional |
 | 2    | STT + rastreamento de roteiro + HUD + alertas | Teleprompter inteligente funcionando |
-| 3    | SEO/AEO engine + Copy generator | Videos nascem otimizados |
-| 4    | Remotion: corte, shorts, thumbnail, export | Pos-producao semi-automatica |
-| 5    | Memoria + analytics + aprendizado | Sistema evolui com voce |
+| 3    | Criacao visual: Nano Banana Pro + Veo 3.1 + Suno + ElevenLabs | Pipeline de assets IA funcionando |
+| 4    | Remotion + FFmpeg: corte, shorts, thumbnail, export | Pos-producao automatizada com assets IA |
+| 5    | SEO/AEO engine + Copy generator + YouTube API | Videos nascem otimizados e publicados |
+| 6    | Memoria + analytics + aprendizado | Sistema evolui com voce |
 
 ---
 
@@ -98,7 +114,9 @@ ai-host/
 │   ├── ARCHITECTURE.md      # Arquitetura tecnica
 │   ├── AGENT_SPEC.md        # Personalidade e regras do agente
 │   ├── TASKS.md             # Board de tasks
-│   └── PHASE_1_PLAN.md      # Plano detalhado fase 1
+│   ├── PHASE_1_PLAN.md      # Plano detalhado fase 1
+│   ├── MCP_AND_SKILLS.md    # MCPs, Skills e ferramentas
+│   └── CINEMATOGRAPHY.md    # Principios de cinematografia pra IA
 ├── src/
 │   ├── backend/             # Node + Express + WebSocket server
 │   ├── frontend/            # React + Three.js avatar overlay
