@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seed Agents - Autonomous Agent SaaS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #161616;
+            --bg-card-hover: #1a1a1a;
+            --bg-input: #1c1c1c;
+            --border: #222222;
+            --border-light: #2a2a2a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent: #c8a84e;
+            --accent-dim: #8b7535;
+            --accent-glow: rgba(200, 168, 78, 0.15);
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --white: #ffffff;
+            --black: #000000;
+            --stripe-1: rgba(255,255,255,0.02);
+            --stripe-2: transparent;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* STRIPE PATTERN BACKGROUND */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--stripe-1) 0px,
+                var(--stripe-1) 60px,
+                var(--stripe-2) 60px,
+                var(--stripe-2) 120px
+            );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* TOP BAR */
+        .topbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 56px;
+            background: var(--black);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 100;
+        }
+
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 3px;
+            color: var(--white);
+        }
+
+        .topbar-logo span {
+            color: var(--accent);
+        }
+
+        .topbar-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            padding: 2px 8px;
+            border: 1px solid var(--accent-dim);
+            color: var(--accent);
+            letter-spacing: 1px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .topbar-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            top: 56px; left: 0; bottom: 0;
+            width: 220px;
+            background: var(--black);
+            border-right: 1px solid var(--border);
+            padding: 16px 0;
+            z-index: 90;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            padding: 0 20px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-left: 2px solid transparent;
+        }
+
+        .sidebar-item:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .sidebar-item.active {
+            background: var(--accent-glow);
+            color: var(--accent);
+            border-left-color: var(--accent);
+        }
+
+        .sidebar-item svg {
+            width: 16px; height: 16px;
+            opacity: 0.7;
+        }
+
+        .sidebar-item.active svg {
+            opacity: 1;
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            margin-left: 220px;
+            margin-top: 56px;
+            padding: 24px;
+            position: relative;
+            z-index: 1;
+            min-height: calc(100vh - 56px);
+        }
+
+        /* PAGE VIEWS */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* DASHBOARD */
+        .dashboard-header {
+            margin-bottom: 32px;
+        }
+
+        .dashboard-header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 42px;
+            letter-spacing: 2px;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .dashboard-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--accent);
+        }
+
+        .stat-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 36px;
+            color: var(--white);
+            line-height: 1;
+        }
+
+        .stat-change {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        .stat-change.up { color: var(--success); }
+        .stat-change.down { color: var(--danger); }
+
+        /* SECTIONS */
+        .section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title .line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* AGENT CARDS */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .agent-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .agent-card:hover {
+            border-color: var(--accent-dim);
+            background: var(--bg-card-hover);
+            transform: translateY(-1px);
+        }
+
+        .agent-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .agent-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+
+        .agent-status {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            padding: 2px 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .agent-status.active { background: rgba(46,204,113,0.15); color: var(--success); border: 1px solid rgba(46,204,113,0.3); }
+        .agent-status.draft { background: rgba(136,136,136,0.15); color: var(--text-secondary); border: 1px solid rgba(136,136,136,0.3); }
+        .agent-status.paused { background: rgba(243,156,18,0.15); color: var(--warning); border: 1px solid rgba(243,156,18,0.3); }
+
+        .agent-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .agent-meta {
+            display: flex;
+            gap: 16px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .agent-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .agent-type-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            padding: 2px 6px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            border: 1px solid var(--accent-dim);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 12px;
+            display: inline-block;
+        }
+
+        /* CREATE AGENT FORM */
+        .create-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 32px;
+            max-width: 700px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 10px 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            border-color: var(--accent);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* BUTTONS */
+        .btn {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 1px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--black);
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: #d4b55a;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid rgba(231,76,60,0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(231,76,60,0.1);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 10px;
+        }
+
+        /* CHAT INTERFACE */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+        }
+
+        .chat-agent-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 1px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-message {
+            max-width: 80%;
+            padding: 12px 16px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+            background: var(--accent);
+            color: var(--black);
+        }
+
+        .chat-message.assistant {
+            align-self: flex-start;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .chat-message .msg-meta {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            opacity: 0.6;
+            margin-top: 6px;
+        }
+
+        .chat-input-area {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            background: var(--bg-card);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent);
+        }
+
+        .chat-send {
+            background: var(--accent);
+            color: var(--black);
+            border: none;
+            padding: 12px 24px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .chat-send:hover {
+            background: #d4b55a;
+        }
+
+        /* WORKFLOW PAGE */
+        .workflow-timeline {
+            display: flex;
+            gap: 0;
+            margin-bottom: 32px;
+            overflow-x: auto;
+        }
+
+        .workflow-step {
+            flex: 1;
+            min-width: 140px;
+            padding: 16px;
+            text-align: center;
+            position: relative;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .workflow-step.active {
+            border-bottom-color: var(--accent);
+        }
+
+        .workflow-step.completed {
+            border-bottom-color: var(--success);
+        }
+
+        .workflow-step-num {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            color: var(--text-muted);
+        }
+
+        .workflow-step.active .workflow-step-num { color: var(--accent); }
+        .workflow-step.completed .workflow-step-num { color: var(--success); }
+
+        .workflow-step-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .workflow-step.active .workflow-step-label { color: var(--accent); }
+        .workflow-step.completed .workflow-step-label { color: var(--success); }
+
+        /* TELEGRAM CONFIG */
+        .config-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .config-card h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .config-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .code-block {
+            background: var(--black);
+            border: 1px solid var(--border);
+            padding: 16px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        /* API DOCS */
+        .api-endpoint {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+
+        .api-method {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            padding: 3px 8px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .api-method.get { background: rgba(46,204,113,0.15); color: var(--success); }
+        .api-method.post { background: rgba(200,168,78,0.15); color: var(--accent); }
+        .api-method.put { background: rgba(52,152,219,0.15); color: var(--info); }
+        .api-method.delete { background: rgba(231,76,60,0.15); color: var(--danger); }
+
+        .api-path {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .api-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* AGENT DETAIL MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        /* TOAST NOTIFICATION */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-dim);
+            padding: 14px 20px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            z-index: 300;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .agents-grid { grid-template-columns: 1fr; }
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-light); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="topbar-brand">
+        <div class="topbar-logo">SEED <span>AGENTS</span></div>
+        <div class="topbar-badge">AUTONOMOUS SAAS</div>
+    </div>
+    <div class="topbar-actions">
+        <div class="topbar-status">
+            <div class="status-dot"></div>
+            SYSTEM ONLINE
+        </div>
+        <button class="btn btn-sm btn-secondary" onclick="showPage('api')">API DOCS</button>
+    </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-section">
+        <div class="sidebar-label">Principal</div>
+        <div class="sidebar-item active" data-page="dashboard" onclick="showPage('dashboard')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Dashboard
+        </div>
+        <div class="sidebar-item" data-page="agents" onclick="showPage('agents')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-4 3-7 7-7s7 3 7 7"/></svg>
+            Agentes
+        </div>
+        <div class="sidebar-item" data-page="chat" onclick="showPage('chat')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Chat
+        </div>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-label">Workflow</div>
+        <div class="sidebar-item" data-page="workflow" onclick="showPage('workflow')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6m0 8v6M4.93 4.93l4.24 4.24m5.66 5.66l4.24 4.24M2 12h6m8 0h6M4.93 19.07l4.24-4.24m5.66-5.66l4.24-4.24"/></svg>
+            Novo Workflow
+        </div>
+        <div class="sidebar-item" data-page="create" onclick="showPage('create')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Criar Agente
+        </div>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-label">Integracao</div>
+        <div class="sidebar-item" data-page="telegram" onclick="showPage('telegram')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            Telegram
+        </div>
+        <div class="sidebar-item" data-page="api" onclick="showPage('api')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            API
+        </div>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+    <!-- DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+        <div class="dashboard-header">
+            <h1>COMMAND CENTER</h1>
+            <p>Visao geral do ecossistema de agentes autonomos</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Agentes Ativos</div>
+                <div class="stat-value" id="stat-agents">0</div>
+                <div class="stat-change up" id="stat-agents-change"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Mensagens Totais</div>
+                <div class="stat-value" id="stat-messages">0</div>
+                <div class="stat-change up" id="stat-messages-change"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Conversas</div>
+                <div class="stat-value" id="stat-conversations">0</div>
+                <div class="stat-change" id="stat-conversations-change"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Telegram Links</div>
+                <div class="stat-value" id="stat-telegram">0</div>
+                <div class="stat-change" id="stat-telegram-change"></div>
+            </div>
+        </div>
+
+        <div class="section-title">
+            AGENTES RECENTES <span class="line"></span>
+        </div>
+        <div class="agents-grid" id="dashboard-agents"></div>
+    </div>
+
+    <!-- AGENTS PAGE -->
+    <div class="page" id="page-agents">
+        <div class="dashboard-header">
+            <h1>MEUS AGENTES</h1>
+            <p>Gerencie seus assistentes autonomos personalizados</p>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <button class="btn btn-primary" onclick="showPage('create')">+ NOVO AGENTE</button>
+        </div>
+        <div class="agents-grid" id="agents-list"></div>
+    </div>
+
+    <!-- CREATE AGENT PAGE -->
+    <div class="page" id="page-create">
+        <div class="dashboard-header">
+            <h1>CRIAR AGENTE</h1>
+            <p>Configure um novo assistente autonomo personalizado</p>
+        </div>
+        <div class="create-panel">
+            <form id="create-agent-form" onsubmit="createAgent(event)">
+                <div class="form-group">
+                    <label class="form-label">Nome do Agente</label>
+                    <input class="form-input" type="text" id="agent-name" placeholder="Ex: DILI, LEX, COBRA..." required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descricao</label>
+                    <input class="form-input" type="text" id="agent-description" placeholder="O que este agente faz?">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tipo</label>
+                        <select class="form-select" id="agent-type">
+                            <option value="assistant">Assistente</option>
+                            <option value="analyst">Analista</option>
+                            <option value="legal">Juridico</option>
+                            <option value="collector">Cobrador</option>
+                            <option value="financial">Financeiro</option>
+                            <option value="judicial">Judicial</option>
+                            <option value="orchestrator">Orquestrador</option>
+                            <option value="custom">Customizado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Idioma</label>
+                        <select class="form-select" id="agent-language">
+                            <option value="pt-BR">Portugues (BR)</option>
+                            <option value="en">English</option>
+                            <option value="es">Espanol</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tom</label>
+                        <select class="form-select" id="agent-tone">
+                            <option value="professional">Profissional</option>
+                            <option value="friendly">Amigavel</option>
+                            <option value="formal">Formal</option>
+                            <option value="casual">Casual</option>
+                            <option value="empathetic">Empatico</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Formalidade</label>
+                        <select class="form-select" id="agent-formality">
+                            <option value="formal">Formal</option>
+                            <option value="semi-formal">Semi-formal</option>
+                            <option value="informal">Informal</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prompt do Sistema</label>
+                    <textarea class="form-textarea" id="agent-prompt" placeholder="Instrucoes de comportamento para o agente..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contexto do Negocio</label>
+                    <textarea class="form-textarea" id="agent-context" placeholder="Descreva o negocio, clientes, produtos, servicos..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Instrucoes Customizadas</label>
+                    <textarea class="form-textarea" id="agent-custom" placeholder="Instrucoes especificas adicionais..."></textarea>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-primary">CRIAR AGENTE</button>
+                    <button type="button" class="btn btn-secondary" onclick="showPage('agents')">CANCELAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CHAT PAGE -->
+    <div class="page" id="page-chat">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div>
+                    <div class="chat-agent-name" id="chat-agent-name">SELECIONE UM AGENTE</div>
+                    <div style="font-size: 11px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace;">
+                        <span id="chat-agent-type"></span>
+                    </div>
+                </div>
+                <select class="form-select" id="chat-agent-select" onchange="selectChatAgent(this.value)" style="width: 200px;">
+                    <option value="">Escolher agente...</option>
+                </select>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="empty-state">
+                    <h3>INICIAR CONVERSA</h3>
+                    <p>Selecione um agente acima para comecar a conversar</p>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input class="chat-input" id="chat-input" type="text" placeholder="Digite sua mensagem..." onkeypress="if(event.key==='Enter')sendChatMessage()">
+                <button class="chat-send" onclick="sendChatMessage()">ENVIAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WORKFLOW PAGE -->
+    <div class="page" id="page-workflow">
+        <div class="dashboard-header">
+            <h1>WORKFLOW DE CRIACAO</h1>
+            <p>Pipeline de descoberta ate a entrega do agente personalizado</p>
+        </div>
+
+        <div class="workflow-timeline">
+            <div class="workflow-step active" id="wf-step-1">
+                <div class="workflow-step-num">01</div>
+                <div class="workflow-step-label">Discovery</div>
+            </div>
+            <div class="workflow-step" id="wf-step-2">
+                <div class="workflow-step-num">02</div>
+                <div class="workflow-step-label">Dores</div>
+            </div>
+            <div class="workflow-step" id="wf-step-3">
+                <div class="workflow-step-num">03</div>
+                <div class="workflow-step-label">Design</div>
+            </div>
+            <div class="workflow-step" id="wf-step-4">
+                <div class="workflow-step-num">04</div>
+                <div class="workflow-step-label">Criacao</div>
+            </div>
+            <div class="workflow-step" id="wf-step-5">
+                <div class="workflow-step-num">05</div>
+                <div class="workflow-step-label">Teste</div>
+            </div>
+            <div class="workflow-step" id="wf-step-6">
+                <div class="workflow-step-num">06</div>
+                <div class="workflow-step-label">Entrega</div>
+            </div>
+        </div>
+
+        <div class="create-panel" style="max-width: 100%;">
+            <div id="workflow-content">
+                <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px; margin-bottom: 16px;">FASE 1: DISCOVERY</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">Conte sobre o cliente e seu negocio para criarmos o ecossistema ideal.</p>
+                <form id="workflow-discovery-form" onsubmit="startWorkflow(event)">
+                    <div class="form-group">
+                        <label class="form-label">Nome do Cliente</label>
+                        <input class="form-input" type="text" id="wf-client-name" required placeholder="Ex: Dr. Carlos">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Profissao</label>
+                        <input class="form-input" type="text" id="wf-profession" required placeholder="Ex: Jurista, Comerciante, Medico...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descricao do Negocio</label>
+                        <textarea class="form-textarea" id="wf-business" placeholder="Descreva o que o cliente faz, como opera, seus clientes..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Atividades Principais (separadas por virgula)</label>
+                        <input class="form-input" type="text" id="wf-activities" placeholder="Ex: emprestimos, contratos, cobranca...">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Tamanho da Equipe</label>
+                            <select class="form-select" id="wf-team">
+                                <option value="solo">Solo / Individual</option>
+                                <option value="small">2-5 pessoas</option>
+                                <option value="medium">6-20 pessoas</option>
+                                <option value="large">20+ pessoas</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Comfort com Tecnologia</label>
+                            <select class="form-select" id="wf-tech">
+                                <option value="basic">Basico</option>
+                                <option value="intermediate">Intermediario</option>
+                                <option value="advanced">Avancado</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">INICIAR WORKFLOW</button>
+                </form>
+            </div>
+
+            <!-- Workflow Chat (hidden initially) -->
+            <div id="workflow-chat-area" style="display: none;">
+                <div class="chat-messages" id="workflow-messages" style="height: 400px; border: 1px solid var(--border); margin-bottom: 16px;"></div>
+                <div class="chat-input-area" style="padding: 0;">
+                    <input class="chat-input" id="workflow-input" type="text" placeholder="Continue a conversa com o workflow engine..." onkeypress="if(event.key==='Enter')sendWorkflowMessage()">
+                    <button class="chat-send" onclick="sendWorkflowMessage()">ENVIAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELEGRAM PAGE -->
+    <div class="page" id="page-telegram">
+        <div class="dashboard-header">
+            <h1>TELEGRAM</h1>
+            <p>Configure a integracao com Telegram para seus agentes</p>
+        </div>
+
+        <div class="config-card">
+            <h3>1. CONFIGURAR BOT TOKEN</h3>
+            <p>Crie um bot no Telegram via @BotFather e insira o token abaixo.</p>
+            <div class="form-group">
+                <input class="form-input" type="text" id="tg-token" placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveTelegramToken()">SALVAR TOKEN</button>
+        </div>
+
+        <div class="config-card">
+            <h3>2. CONFIGURAR WEBHOOK</h3>
+            <p>Configure o webhook para receber mensagens do Telegram.</p>
+            <div class="form-group">
+                <input class="form-input" type="text" id="tg-webhook" placeholder="https://seu-dominio.com/api/telegram/webhook">
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-primary btn-sm" onclick="setupWebhook()">ATIVAR WEBHOOK</button>
+                <button class="btn btn-danger btn-sm" onclick="removeWebhook()">REMOVER</button>
+            </div>
+        </div>
+
+        <div class="config-card">
+            <h3>3. COMANDOS DO BOT</h3>
+            <p>Seu bot Telegram responde aos seguintes comandos:</p>
+            <div class="code-block">/start     - Mensagem de boas-vindas
+/agents    - Listar agentes disponiveis
+/link &lt;id&gt; - Conectar a um agente especifico
+/status    - Ver status do agente conectado</div>
+        </div>
+
+        <div class="config-card">
+            <h3>4. AGENTES CONECTADOS</h3>
+            <div id="telegram-linked-agents">
+                <p style="color: var(--text-muted);">Nenhum agente conectado ao Telegram ainda.</p>
+            </div>
+        </div>
+
+        <div class="config-card">
+            <h3>5. TESTAR ENVIO</h3>
+            <p>Envie uma mensagem de teste para um chat do Telegram.</p>
+            <div class="form-row">
+                <div class="form-group">
+                    <input class="form-input" type="text" id="tg-test-chat" placeholder="Chat ID">
+                </div>
+                <div class="form-group">
+                    <input class="form-input" type="text" id="tg-test-msg" placeholder="Mensagem de teste">
+                </div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="sendTestTelegram()">ENVIAR TESTE</button>
+        </div>
+    </div>
+
+    <!-- API DOCS PAGE -->
+    <div class="page" id="page-api">
+        <div class="dashboard-header">
+            <h1>API REFERENCE</h1>
+            <p>Documentacao da API para integracao com seus agentes</p>
+        </div>
+
+        <div class="config-card">
+            <h3>AUTENTICACAO</h3>
+            <p>Use a API key do seu agente no header Authorization:</p>
+            <div class="code-block">Authorization: Bearer sk-seed-xxxxxxxxxxxxxxxxx</div>
+        </div>
+
+        <div class="section-title">ENDPOINTS <span class="line"></span></div>
+
+        <div class="api-endpoint">
+            <span class="api-method get">GET</span>
+            <span class="api-path">/api/agents/</span>
+            <div class="api-desc">Listar todos os agentes</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method post">POST</span>
+            <span class="api-path">/api/agents/</span>
+            <div class="api-desc">Criar novo agente</div>
+            <div class="code-block">{
+  "name": "MEU AGENTE",
+  "description": "Assistente personalizado",
+  "agent_type": "assistant",
+  "system_prompt": "Voce e um assistente profissional...",
+  "personality": {
+    "tone": "professional",
+    "language": "pt-BR",
+    "formality": "formal",
+    "empathy_level": 7
+  },
+  "context": "Contexto do negocio..."
+}</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method post">POST</span>
+            <span class="api-path">/api/agents/quick</span>
+            <div class="api-desc">Criar agente rapidamente com parametros simples</div>
+            <div class="code-block">?name=MeuAgente&amp;description=Assistente&amp;system_prompt=Seja+util</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method get">GET</span>
+            <span class="api-path">/api/agents/{agent_id}</span>
+            <div class="api-desc">Detalhes de um agente especifico</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method put">PUT</span>
+            <span class="api-path">/api/agents/{agent_id}</span>
+            <div class="api-desc">Atualizar configuracao do agente</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method delete">DELETE</span>
+            <span class="api-path">/api/agents/{agent_id}</span>
+            <div class="api-desc">Remover agente</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method post">POST</span>
+            <span class="api-path">/v1/agents/chat/completions</span>
+            <div class="api-desc">Conversar com um agente (formato OpenAI-compatible)</div>
+            <div class="code-block">{
+  "agent_id": "uuid-do-agente",
+  "messages": [
+    {"role": "user", "content": "Ola, preciso de ajuda"}
+  ],
+  "stream": false
+}</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method get">GET</span>
+            <span class="api-path">/v1/agents/models</span>
+            <div class="api-desc">Listar agentes disponiveis como modelos</div>
+        </div>
+
+        <div class="section-title" style="margin-top: 32px;">WORKFLOW API <span class="line"></span></div>
+
+        <div class="api-endpoint">
+            <span class="api-method post">POST</span>
+            <span class="api-path">/api/workflows/</span>
+            <div class="api-desc">Iniciar novo workflow de criacao de agente</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method post">POST</span>
+            <span class="api-path">/api/workflows/{id}/chat</span>
+            <div class="api-desc">Conversar com o workflow engine</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method post">POST</span>
+            <span class="api-path">/api/workflows/{id}/create-agents</span>
+            <div class="api-desc">Criar agentes a partir do workflow completado</div>
+        </div>
+
+        <div class="section-title" style="margin-top: 32px;">TELEGRAM API <span class="line"></span></div>
+
+        <div class="api-endpoint">
+            <span class="api-method post">POST</span>
+            <span class="api-path">/api/telegram/webhook</span>
+            <div class="api-desc">Endpoint de webhook do Telegram</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method post">POST</span>
+            <span class="api-path">/api/telegram/setup</span>
+            <div class="api-desc">Configurar webhook do Telegram</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method get">GET</span>
+            <span class="api-path">/api/telegram/status</span>
+            <div class="api-desc">Status da integracao Telegram</div>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="api-method post">POST</span>
+            <span class="api-path">/api/telegram/send</span>
+            <div class="api-desc">Enviar mensagem direta via Telegram</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- AGENT DETAIL MODAL -->
+<div class="modal-overlay" id="agent-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px;" id="modal-agent-name"></h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div id="modal-agent-content"></div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+    // ===== STATE =====
+    let agents = [];
+    let currentChatAgent = null;
+    let chatMessages = {};
+    let currentWorkflow = null;
+    const API_BASE = '';
+
+    // ===== NAVIGATION =====
+    function showPage(page) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('page-' + page).classList.add('active');
+        const sidebarItem = document.querySelector(`.sidebar-item[data-page="${page}"]`);
+        if (sidebarItem) sidebarItem.classList.add('active');
+
+        if (page === 'dashboard') loadDashboard();
+        if (page === 'agents') loadAgents();
+        if (page === 'chat') loadChatAgents();
+        if (page === 'telegram') loadTelegramStatus();
+    }
+
+    // ===== TOAST =====
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ===== API HELPERS =====
+    async function apiGet(path) {
+        const res = await fetch(API_BASE + path);
+        return res.json();
+    }
+
+    async function apiPost(path, data) {
+        const res = await fetch(API_BASE + path, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    }
+
+    async function apiPut(path, data) {
+        const res = await fetch(API_BASE + path, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    }
+
+    async function apiDelete(path) {
+        const res = await fetch(API_BASE + path, {method: 'DELETE'});
+        return res.json();
+    }
+
+    // ===== DASHBOARD =====
+    async function loadDashboard() {
+        try {
+            const data = await apiGet('/api/agents/');
+            agents = data.agents || [];
+            updateStats();
+            renderDashboardAgents();
+        } catch(e) {
+            console.error('Error loading dashboard:', e);
+        }
+    }
+
+    function updateStats() {
+        const active = agents.filter(a => a.status === 'active');
+        const totalMsg = agents.reduce((s, a) => s + (a.total_messages || 0), 0);
+        const totalConv = agents.reduce((s, a) => s + (a.total_conversations || 0), 0);
+        const tgLinked = agents.filter(a => a.telegram_linked).length;
+
+        document.getElementById('stat-agents').textContent = active.length;
+        document.getElementById('stat-messages').textContent = totalMsg;
+        document.getElementById('stat-conversations').textContent = totalConv;
+        document.getElementById('stat-telegram').textContent = tgLinked;
+    }
+
+    function renderDashboardAgents() {
+        const container = document.getElementById('dashboard-agents');
+        if (agents.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="grid-column: 1/-1;">
+                    <h3>NENHUM AGENTE CRIADO</h3>
+                    <p>Crie seu primeiro agente autonomo para comecar</p>
+                    <button class="btn btn-primary" onclick="showPage('create')">+ CRIAR AGENTE</button>
+                </div>
+            `;
+            return;
+        }
+        container.innerHTML = agents.slice(0, 6).map(a => agentCardHTML(a)).join('');
+    }
+
+    // ===== AGENTS =====
+    async function loadAgents() {
+        const data = await apiGet('/api/agents/');
+        agents = data.agents || [];
+        const container = document.getElementById('agents-list');
+        if (agents.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="grid-column: 1/-1;">
+                    <h3>NENHUM AGENTE</h3>
+                    <p>Comece criando seu primeiro agente autonomo</p>
+                    <button class="btn btn-primary" onclick="showPage('create')">+ CRIAR AGENTE</button>
+                </div>
+            `;
+            return;
+        }
+        container.innerHTML = agents.map(a => agentCardHTML(a)).join('');
+    }
+
+    function agentCardHTML(agent) {
+        return `
+            <div class="agent-card" onclick="openAgentDetail('${agent.id}')">
+                <div class="agent-card-header">
+                    <div class="agent-name">${agent.name}</div>
+                    <div class="agent-status ${agent.status}">${agent.status}</div>
+                </div>
+                <div class="agent-desc">${agent.description || 'Sem descricao'}</div>
+                <div class="agent-meta">
+                    <div class="agent-meta-item">${agent.total_messages || 0} msgs</div>
+                    <div class="agent-meta-item">${agent.total_conversations || 0} convs</div>
+                    ${agent.telegram_linked ? '<div class="agent-meta-item">TG</div>' : ''}
+                </div>
+                <div class="agent-type-badge">${agent.agent_type}</div>
+            </div>
+        `;
+    }
+
+    function openAgentDetail(agentId) {
+        const agent = agents.find(a => a.id === agentId);
+        if (!agent) return;
+
+        document.getElementById('modal-agent-name').textContent = agent.name;
+        document.getElementById('modal-agent-content').innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <div class="agent-status ${agent.status}" style="display: inline-block; margin-bottom: 12px;">${agent.status}</div>
+                <div class="agent-type-badge">${agent.agent_type}</div>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <div class="form-label">Descricao</div>
+                <p style="font-size: 14px; color: var(--text-secondary);">${agent.description || 'N/A'}</p>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <div class="form-label">API Key</div>
+                <div class="code-block" style="font-size: 11px; word-break: break-all;">${agent.api_key}</div>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <div class="form-label">Personalidade</div>
+                <p style="font-size: 13px; color: var(--text-secondary);">
+                    Tom: ${agent.personality?.tone || 'N/A'} |
+                    Idioma: ${agent.personality?.language || 'N/A'} |
+                    Formalidade: ${agent.personality?.formality || 'N/A'} |
+                    Empatia: ${agent.personality?.empathy_level || 'N/A'}/10
+                </p>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <div class="form-label">Telegram</div>
+                <p style="font-size: 13px; color: var(--text-secondary);">
+                    ${agent.telegram_linked ? 'Conectado (Chat: ' + agent.telegram_chat_id + ')' : 'Nao conectado'}
+                </p>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <div class="form-label">Estatisticas</div>
+                <p style="font-size: 13px; color: var(--text-secondary);">
+                    ${agent.total_messages || 0} mensagens | ${agent.total_conversations || 0} conversas
+                </p>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <div class="form-label">Criado em</div>
+                <p style="font-size: 13px; color: var(--text-secondary);">${new Date(agent.created_at).toLocaleString('pt-BR')}</p>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 24px;">
+                <button class="btn btn-primary btn-sm" onclick="chatWithAgent('${agent.id}')">CONVERSAR</button>
+                ${agent.status === 'active' ?
+                    `<button class="btn btn-secondary btn-sm" onclick="toggleAgent('${agent.id}', 'pause')">PAUSAR</button>` :
+                    `<button class="btn btn-secondary btn-sm" onclick="toggleAgent('${agent.id}', 'activate')">ATIVAR</button>`
+                }
+                <button class="btn btn-danger btn-sm" onclick="deleteAgent('${agent.id}')">EXCLUIR</button>
+            </div>
+        `;
+        document.getElementById('agent-modal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('agent-modal').classList.remove('active');
+    }
+
+    async function toggleAgent(agentId, action) {
+        await apiPost(`/api/agents/${agentId}/${action}`);
+        showToast(`Agente ${action === 'activate' ? 'ativado' : 'pausado'}`);
+        closeModal();
+        loadAgents();
+    }
+
+    async function deleteAgent(agentId) {
+        if (!confirm('Tem certeza que deseja excluir este agente?')) return;
+        await apiDelete(`/api/agents/${agentId}`);
+        showToast('Agente excluido');
+        closeModal();
+        loadAgents();
+    }
+
+    function chatWithAgent(agentId) {
+        closeModal();
+        showPage('chat');
+        document.getElementById('chat-agent-select').value = agentId;
+        selectChatAgent(agentId);
+    }
+
+    // ===== CREATE AGENT =====
+    async function createAgent(e) {
+        e.preventDefault();
+
+        const data = {
+            name: document.getElementById('agent-name').value,
+            description: document.getElementById('agent-description').value,
+            agent_type: document.getElementById('agent-type').value,
+            system_prompt: document.getElementById('agent-prompt').value,
+            context: document.getElementById('agent-context').value,
+            personality: {
+                tone: document.getElementById('agent-tone').value,
+                language: document.getElementById('agent-language').value,
+                formality: document.getElementById('agent-formality').value,
+                empathy_level: 7,
+                custom_instructions: document.getElementById('agent-custom').value,
+            }
+        };
+
+        try {
+            const result = await apiPost('/api/agents/', data);
+            showToast(`Agente "${result.name}" criado com sucesso!`);
+            document.getElementById('create-agent-form').reset();
+            showPage('agents');
+        } catch(e) {
+            showToast('Erro ao criar agente');
+        }
+    }
+
+    // ===== CHAT =====
+    async function loadChatAgents() {
+        const data = await apiGet('/api/agents/');
+        agents = data.agents || [];
+        const select = document.getElementById('chat-agent-select');
+        select.innerHTML = '<option value="">Escolher agente...</option>';
+        agents.filter(a => a.status === 'active').forEach(a => {
+            select.innerHTML += `<option value="${a.id}">${a.name} (${a.agent_type})</option>`;
+        });
+    }
+
+    function selectChatAgent(agentId) {
+        const agent = agents.find(a => a.id === agentId);
+        if (!agent) return;
+        currentChatAgent = agent;
+        document.getElementById('chat-agent-name').textContent = agent.name;
+        document.getElementById('chat-agent-type').textContent = agent.agent_type + ' | ' + agent.personality?.language;
+
+        if (!chatMessages[agentId]) chatMessages[agentId] = [];
+        renderChatMessages();
+    }
+
+    function renderChatMessages() {
+        const container = document.getElementById('chat-messages');
+        if (!currentChatAgent) return;
+        const msgs = chatMessages[currentChatAgent.id] || [];
+        if (msgs.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>CONVERSA COM ${currentChatAgent.name}</h3>
+                    <p>Envie uma mensagem para iniciar</p>
+                </div>
+            `;
+            return;
+        }
+        container.innerHTML = msgs.map(m => `
+            <div class="chat-message ${m.role}">
+                ${m.content}
+                <div class="msg-meta">${m.role === 'user' ? 'Voce' : currentChatAgent.name}</div>
+            </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendChatMessage() {
+        if (!currentChatAgent) {
+            showToast('Selecione um agente primeiro');
+            return;
+        }
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        input.value = '';
+        if (!chatMessages[currentChatAgent.id]) chatMessages[currentChatAgent.id] = [];
+        chatMessages[currentChatAgent.id].push({role: 'user', content: text});
+        renderChatMessages();
+
+        try {
+            const messages = chatMessages[currentChatAgent.id].map(m => ({
+                role: m.role,
+                content: m.content,
+            }));
+            const result = await apiPost('/v1/agents/chat/completions', {
+                agent_id: currentChatAgent.id,
+                messages: messages,
+                stream: false,
+            });
+            const reply = result.choices?.[0]?.message?.content || 'Sem resposta';
+            chatMessages[currentChatAgent.id].push({role: 'assistant', content: reply});
+            renderChatMessages();
+        } catch(e) {
+            chatMessages[currentChatAgent.id].push({role: 'assistant', content: '[Erro de comunicacao]'});
+            renderChatMessages();
+        }
+    }
+
+    // ===== WORKFLOW =====
+    async function startWorkflow(e) {
+        e.preventDefault();
+
+        const data = {
+            client_name: document.getElementById('wf-client-name').value,
+            discovery: {
+                client_name: document.getElementById('wf-client-name').value,
+                profession: document.getElementById('wf-profession').value,
+                business_description: document.getElementById('wf-business').value,
+                main_activities: document.getElementById('wf-activities').value.split(',').map(s => s.trim()).filter(Boolean),
+                team_size: document.getElementById('wf-team').value,
+                tech_comfort: document.getElementById('wf-tech').value,
+            }
+        };
+
+        try {
+            const result = await apiPost('/api/workflows/', data);
+            currentWorkflow = result;
+            showToast('Workflow iniciado!');
+
+            document.getElementById('workflow-content').querySelector('form').style.display = 'none';
+            document.getElementById('workflow-chat-area').style.display = 'block';
+
+            // Auto first message
+            const firstMsg = `Meu cliente e ${data.discovery.client_name}, profissao: ${data.discovery.profession}. Negocio: ${data.discovery.business_description}. Atividades: ${data.discovery.main_activities.join(', ')}. Equipe: ${data.discovery.team_size}. Nivel tech: ${data.discovery.tech_comfort}. Quais as principais dores que voce identifica para este perfil?`;
+            await sendWorkflowMessageDirect(firstMsg);
+        } catch(e) {
+            showToast('Erro ao iniciar workflow');
+        }
+    }
+
+    async function sendWorkflowMessage() {
+        const input = document.getElementById('workflow-input');
+        const text = input.value.trim();
+        if (!text || !currentWorkflow) return;
+        input.value = '';
+        await sendWorkflowMessageDirect(text);
+    }
+
+    async function sendWorkflowMessageDirect(text) {
+        const container = document.getElementById('workflow-messages');
+        container.innerHTML += `<div class="chat-message user">${text}<div class="msg-meta">Voce</div></div>`;
+        container.scrollTop = container.scrollHeight;
+
+        try {
+            const result = await apiPost(`/api/workflows/${currentWorkflow.id}/chat?message=${encodeURIComponent(text)}`, {});
+            container.innerHTML += `<div class="chat-message assistant">${result.response || 'Sem resposta'}<div class="msg-meta">Workflow Engine</div></div>`;
+            container.scrollTop = container.scrollHeight;
+        } catch(e) {
+            container.innerHTML += `<div class="chat-message assistant">[Erro de comunicacao]<div class="msg-meta">Sistema</div></div>`;
+        }
+    }
+
+    // ===== TELEGRAM =====
+    async function loadTelegramStatus() {
+        try {
+            const data = await apiGet('/api/telegram/status');
+            const container = document.getElementById('telegram-linked-agents');
+            if (data.linked_agents && data.linked_agents.length > 0) {
+                container.innerHTML = data.linked_agents.map(a => `
+                    <div style="padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+                        <span style="font-weight: 500;">${a.name}</span>
+                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted);">Chat: ${a.chat_id}</span>
+                    </div>
+                `).join('');
+            }
+        } catch(e) {}
+    }
+
+    function saveTelegramToken() {
+        const token = document.getElementById('tg-token').value;
+        if (!token) { showToast('Insira o token'); return; }
+        showToast('Token salvo (configure no .env do servidor)');
+    }
+
+    async function setupWebhook() {
+        const url = document.getElementById('tg-webhook').value;
+        if (!url) { showToast('Insira a URL do webhook'); return; }
+        try {
+            await apiPost(`/api/telegram/setup?webhook_url=${encodeURIComponent(url)}`, {});
+            showToast('Webhook configurado!');
+        } catch(e) {
+            showToast('Erro ao configurar webhook');
+        }
+    }
+
+    async function removeWebhook() {
+        try {
+            await apiPost('/api/telegram/remove-webhook', {});
+            showToast('Webhook removido');
+        } catch(e) {
+            showToast('Erro ao remover webhook');
+        }
+    }
+
+    async function sendTestTelegram() {
+        const chatId = document.getElementById('tg-test-chat').value;
+        const msg = document.getElementById('tg-test-msg').value;
+        if (!chatId || !msg) { showToast('Preencha chat ID e mensagem'); return; }
+        try {
+            await apiPost(`/api/telegram/send?chat_id=${encodeURIComponent(chatId)}&text=${encodeURIComponent(msg)}`, {});
+            showToast('Mensagem enviada!');
+        } catch(e) {
+            showToast('Erro ao enviar');
+        }
+    }
+
+    // ===== MODAL CLOSE ON OVERLAY CLICK =====
+    document.getElementById('agent-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // ===== INIT =====
+    loadDashboard();
+</script>
+
+</body>
+</html>

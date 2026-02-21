@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+seed_agents_data.json
+*.db
+.venv/
+venv/
